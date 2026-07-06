@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>科三灯光模拟</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f4;
+      --panel: #ffffff;
+      --text: #17211b;
+      --muted: #627066;
+      --line: #dfe5dd;
+      --green: #187a4d;
+      --green-dark: #0e5b38;
+      --red: #c0392b;
+      --amber: #b7791f;
+      --blue: #2166a5;
+      --shadow: 0 12px 34px rgba(28, 46, 34, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    .app {
+      width: min(960px, 100%);
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 8px 0 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      background: #1f2a24;
+      color: #ffd166;
+      font-size: 27px;
+      line-height: 1;
+      flex: 0 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(25px, 5vw, 38px);
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
+    .mode {
+      display: flex;
+      gap: 6px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #eef2ed;
+      flex: 0 0 auto;
+    }
+
+    .mode button {
+      border: 0;
+      border-radius: 6px;
+      padding: 9px 12px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .mode button.active {
+      background: var(--panel);
+      color: var(--text);
+      box-shadow: 0 2px 10px rgba(28, 46, 34, 0.09);
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .practice,
+    .side {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .practice {
+      padding: 22px;
+      min-height: 610px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #edf5ef;
+      color: var(--green-dark);
+      font-weight: 700;
+    }
+
+    .question-box {
+      display: grid;
+      place-items: center;
+      min-height: 190px;
+      margin: 22px 0 16px;
+      padding: 22px;
+      border: 2px solid #cfd8d0;
+      border-radius: 8px;
+      background: #fbfcfa;
+      text-align: center;
+    }
+
+    .question-label {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .question {
+      margin: 0;
+      font-size: clamp(24px, 5vw, 40px);
+      line-height: 1.25;
+      font-weight: 800;
+    }
+
+    .main-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    button {
+      font-family: inherit;
+      letter-spacing: 0;
+    }
+
+    .primary,
+    .secondary {
+      min-height: 56px;
+      border-radius: 8px;
+      font-size: 20px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .primary {
+      border: 0;
+      background: var(--green);
+      color: white;
+    }
+
+    .primary:active {
+      background: var(--green-dark);
+    }
+
+    .secondary {
+      border: 1px solid var(--line);
+      background: #f5f7f4;
+      color: var(--text);
+    }
+
+    .answers {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .answer {
+      min-height: 64px;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    }
+
+    .answer:hover {
+      border-color: #92a895;
+    }
+
+    .answer.correct {
+      border-color: var(--green);
+      background: #e9f8ee;
+      color: var(--green-dark);
+    }
+
+    .answer.wrong {
+      border-color: var(--red);
+      background: #fff0ed;
+      color: #9d2b21;
+    }
+
+    .feedback {
+      min-height: 58px;
+      margin: 14px 0 0;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #f4f6f3;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.45;
+    }
+
+    .feedback.good {
+      background: #e9f8ee;
+      color: var(--green-dark);
+    }
+
+    .feedback.bad {
+      background: #fff0ed;
+      color: #9d2b21;
+    }
+
+    .side {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .score-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fbfcfa;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 30px;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 19px;
+      line-height: 1.3;
+    }
+
+    .tip-list {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .mistakes {
+      display: grid;
+      gap: 8px;
+      max-height: 210px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .mistake {
+      border: 1px solid #efd3cd;
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff8f6;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .empty {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .small-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    .small-actions button {
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .notice {
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    @media (max-width: 820px) {
+      .app {
+        padding: 14px;
+      }
+
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .mode {
+        width: 100%;
+      }
+
+      .mode button {
+        flex: 1;
+      }
+
+      .stage {
+        grid-template-columns: 1fr;
+      }
+
+      .practice {
+        min-height: auto;
+        padding: 16px;
+      }
+
+      .question-box {
+        min-height: 170px;
+        margin-top: 16px;
+      }
+
+      .answers {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .brand-mark {
+        width: 44px;
+        height: 44px;
+        font-size: 24px;
+      }
+
+      .main-actions,
+      .small-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .primary,
+      .secondary {
+        min-height: 54px;
+      }
+
+      .question-box {
+        padding: 18px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">灯</div>
+        <div>
+          <h1>科三灯光模拟</h1>
+          <p class="subtitle">听语音，选操作，考前快速练一遍。</p>
+        </div>
+      </div>
+      <div class="mode" aria-label="练习模式">
+        <button class="active" type="button" data-mode="random">随机练习</button>
+        <button type="button" data-mode="order">顺序练习</button>
+      </div>
+    </header>
+
+    <section class="stage">
+      <div class="practice">
+        <div class="status-row">
+          <span class="pill" id="modeLabel">随机练习</span>
+          <span id="progressText">第 0 / 12 题</span>
+        </div>
+
+        <div class="question-box" aria-live="polite">
+          <div>
+            <p class="question-label">当前语音</p>
+            <p class="question" id="questionText">点击“开始模拟”播放灯光语音</p>
+          </div>
+        </div>
+
+        <div class="main-actions">
+          <button class="primary" type="button" id="startBtn">开始模拟</button>
+          <button class="secondary" type="button" id="repeatBtn">重听语音</button>
+        </div>
+
+        <div class="answers" id="answers" aria-label="选择灯光操作"></div>
+
+        <div class="feedback" id="feedback">先听题，再选择你要做的灯光操作。</div>
+      </div>
+
+      <aside class="side">
+        <h2 class="panel-title">练习成绩</h2>
+        <div class="score-grid">
+          <div class="stat">
+            <strong id="rightCount">0</strong>
+            <span>答对</span>
+          </div>
+          <div class="stat">
+            <strong id="wrongCount">0</strong>
+            <span>答错</span>
+          </div>
+        </div>
+
+        <h2 class="panel-title">记住三件事</h2>
+        <ul class="tip-list">
+          <li>听到“通过、超越、会车、跟车”先判断灯光场景。</li>
+          <li>雾天通常要开雾灯、危险报警闪光灯。</li>
+          <li>考试以当地教练和考场规则为准。</li>
+        </ul>
+
+        <h2 class="panel-title">错题本</h2>
+        <div class="mistakes" id="mistakes">
+          <p class="empty">还没有错题。</p>
+        </div>
+
+        <div class="small-actions">
+          <button type="button" id="nextBtn">下一题</button>
+          <button type="button" id="resetBtn">重新开始</button>
+        </div>
+      </aside>
+    </section>
+
+    <p class="notice">提示：不同地区灯光题可能有差异，正式考试前请按当地驾校题库校对。</p>
+  </main>
+
+  <script>
+    const questions = [
+      {
+        prompt: "请开启前照灯。",
+        answer: "近光灯",
+        note: "夜间起步或进入照明条件差的道路，先开启前照灯，通常对应近光灯。"
+      },
+      {
+        prompt: "夜间在没有路灯、照明不良条件下行驶。",
+        answer: "远光灯",
+        note: "没有路灯且照明不良时使用远光灯，但遇到会车等情况要及时切换。"
+      },
+      {
+        prompt: "夜间同方向近距离跟车行驶。",
+        answer: "近光灯",
+        note: "近距离跟车不能使用远光灯，避免影响前车驾驶员。"
+      },
+      {
+        prompt: "夜间与机动车会车。",
+        answer: "近光灯",
+        note: "会车时使用近光灯，不能用远光灯晃对向车辆。"
+      },
+      {
+        prompt: "夜间通过急弯、坡路、拱桥、人行横道。",
+        answer: "远近光交替",
+        note: "通过复杂路段需要远近光交替示意。"
+      },
+      {
+        prompt: "夜间通过没有交通信号灯控制的路口。",
+        answer: "远近光交替",
+        note: "无信号灯路口要用远近光交替提醒其他交通参与者。"
+      },
+      {
+        prompt: "夜间超越前方车辆。",
+        answer: "远近光交替",
+        note: "超车前用远近光交替提醒前车。"
+      },
+      {
+        prompt: "夜间在道路上发生故障，妨碍交通又难以移动。",
+        answer: "示廓灯和危险报警闪光灯",
+        note: "车辆故障难以移动时，要开启示廓灯和危险报警闪光灯。"
+      },
+      {
+        prompt: "雾天行驶。",
+        answer: "雾灯和危险报警闪光灯",
+        note: "雾天能见度差，通常开启雾灯和危险报警闪光灯。"
+      },
+      {
+        prompt: "模拟夜间考试完成，请关闭所有灯光。",
+        answer: "关闭所有灯光",
+        note: "灯光考试结束后，按指令关闭所有灯光。"
+      },
+      {
+        prompt: "夜间路口左转弯。",
+        answer: "近光灯",
+        note: "常规夜间路口转弯使用近光灯，具体以当地题库为准。"
+      },
+      {
+        prompt: "夜间路口右转弯。",
+        answer: "近光灯",
+        note: "常规夜间路口转弯使用近光灯，具体以当地题库为准。"
+      }
+    ];
+
+    const options = [
+      "近光灯",
+      "远光灯",
+      "远近光交替",
+      "示廓灯和危险报警闪光灯",
+      "雾灯和危险报警闪光灯",
+      "关闭所有灯光"
+    ];
+
+    const state = {
+      mode: "random",
+      currentIndex: -1,
+      answered: false,
+      right: 0,
+      wrong: 0,
+      seen: 0,
+      mistakes: []
+    };
+
+    const els = {
+      modeButtons: document.querySelectorAll("[data-mode]"),
+      modeLabel: document.getElementById("modeLabel"),
+      progressText: document.getElementById("progressText"),
+      questionText: document.getElementById("questionText"),
+      answers: document.getElementById("answers"),
+      feedback: document.getElementById("feedback"),
+      startBtn: document.getElementById("startBtn"),
+      repeatBtn: document.getElementById("repeatBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+      resetBtn: document.getElementById("resetBtn"),
+      rightCount: document.getElementById("rightCount"),
+      wrongCount: document.getElementById("wrongCount"),
+      mistakes: document.getElementById("mistakes")
+    };
+
+    function speak(text) {
+      if (!("speechSynthesis" in window)) {
+        els.feedback.textContent = "当前浏览器不支持语音播放，请直接看题练习。";
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "zh-CN";
+      utterance.rate = 0.86;
+      utterance.pitch = 1;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function pickNextIndex() {
+      if (state.mode === "order") {
+        return (state.currentIndex + 1) % questions.length;
+      }
+      let next = Math.floor(Math.random() * questions.length);
+      if (questions.length > 1) {
+        while (next === state.currentIndex) {
+          next = Math.floor(Math.random() * questions.length);
+        }
+      }
+      return next;
+    }
+
+    function renderAnswers() {
+      els.answers.innerHTML = "";
+      options.forEach((option) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "answer";
+        button.textContent = option;
+        button.addEventListener("click", () => checkAnswer(option, button));
+        els.answers.appendChild(button);
+      });
+    }
+
+    function showQuestion() {
+      state.currentIndex = pickNextIndex();
+      state.answered = false;
+      state.seen += 1;
+
+      const item = questions[state.currentIndex];
+      els.questionText.textContent = item.prompt;
+      els.feedback.className = "feedback";
+      els.feedback.textContent = "请选择正确的灯光操作。";
+      els.startBtn.textContent = "下一题";
+      updateStats();
+      renderAnswers();
+      speak(item.prompt);
+    }
+
+    function checkAnswer(option, clickedButton) {
+      if (state.currentIndex < 0 || state.answered) {
+        return;
+      }
+
+      state.answered = true;
+      const item = questions[state.currentIndex];
+      const isRight = option === item.answer;
+      const buttons = els.answers.querySelectorAll(".answer");
+
+      buttons.forEach((button) => {
+        if (button.textContent === item.answer) {
+          button.classList.add("correct");
+        }
+      });
+
+      if (isRight) {
+        state.right += 1;
+        els.feedback.className = "feedback good";
+        els.feedback.textContent = "答对了。" + item.note;
+      } else {
+        state.wrong += 1;
+        clickedButton.classList.add("wrong");
+        els.feedback.className = "feedback bad";
+        els.feedback.textContent = "答错了。正确答案：" + item.answer + "。" + item.note;
+        state.mistakes.unshift({
+          prompt: item.prompt,
+          selected: option,
+          answer: item.answer
+        });
+      }
+
+      updateStats();
+      renderMistakes();
+    }
+
+    function updateStats() {
+      els.rightCount.textContent = state.right;
+      els.wrongCount.textContent = state.wrong;
+      els.progressText.textContent = "第 " + state.seen + " / " + questions.length + " 题";
+      els.modeLabel.textContent = state.mode === "random" ? "随机练习" : "顺序练习";
+    }
+
+    function renderMistakes() {
+      if (state.mistakes.length === 0) {
+        els.mistakes.innerHTML = '<p class="empty">还没有错题。</p>';
+        return;
+      }
+
+      els.mistakes.innerHTML = state.mistakes.map((item) => (
+        '<div class="mistake"><strong>' + item.prompt + '</strong><br>你选：' +
+        item.selected + '<br>正确：' + item.answer + '</div>'
+      )).join("");
+    }
+
+    function resetPractice() {
+      window.speechSynthesis && window.speechSynthesis.cancel();
+      state.currentIndex = -1;
+      state.answered = false;
+      state.right = 0;
+      state.wrong = 0;
+      state.seen = 0;
+      state.mistakes = [];
+      els.questionText.textContent = "点击“开始模拟”播放灯光语音";
+      els.feedback.className = "feedback";
+      els.feedback.textContent = "先听题，再选择你要做的灯光操作。";
+      els.startBtn.textContent = "开始模拟";
+      updateStats();
+      renderAnswers();
+      renderMistakes();
+    }
+
+    els.modeButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        state.mode = button.dataset.mode;
+        els.modeButtons.forEach((item) => item.classList.remove("active"));
+        button.classList.add("active");
+        resetPractice();
+      });
+    });
+
+    els.startBtn.addEventListener("click", showQuestion);
+    els.nextBtn.addEventListener("click", showQuestion);
+    els.repeatBtn.addEventListener("click", () => {
+      if (state.currentIndex < 0) {
+        speak("请先点击开始模拟。");
+        return;
+      }
+      speak(questions[state.currentIndex].prompt);
+    });
+    els.resetBtn.addEventListener("click", resetPractice);
+
+    resetPractice();
+  </script>
+</body>
+</html>

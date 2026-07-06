@@ -224,11 +224,6 @@
       font-size: 18px;
       font-weight: 900;
       cursor: pointer;
-      transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
-    }
-
-    .answer:hover {
-      border-color: #92a895;
     }
 
     .answer.correct {
@@ -291,9 +286,10 @@
       margin-bottom: 6px;
     }
 
-    .stat span {
+    .stat span,
+    .tip-list,
+    .empty {
       color: var(--muted);
-      font-size: 14px;
     }
 
     .panel-title {
@@ -305,7 +301,6 @@
     .tip-list {
       margin: 0;
       padding-left: 20px;
-      color: var(--muted);
       font-size: 15px;
       line-height: 1.65;
     }
@@ -329,7 +324,6 @@
 
     .empty {
       margin: 0;
-      color: var(--muted);
       font-size: 15px;
       line-height: 1.5;
     }
@@ -378,7 +372,9 @@
         flex: 1;
       }
 
-      .stage {
+      .stage,
+      .main-actions,
+      .answers {
         grid-template-columns: 1fr;
       }
 
@@ -391,11 +387,6 @@
         min-height: 170px;
         margin-top: 16px;
       }
-
-      .main-actions,
-      .answers {
-        grid-template-columns: 1fr;
-      }
     }
   </style>
 </head>
@@ -406,7 +397,7 @@
         <div class="brand-mark" aria-hidden="true">灯</div>
         <div>
           <h1>科三灯光模拟</h1>
-          <p class="subtitle">按本地题库练习。先点开启语音，再开始模拟。</p>
+          <p class="subtitle">按本地题库练习。手机点开始后直接播放考题音频。</p>
         </div>
       </div>
       <div class="mode" aria-label="练习模式">
@@ -425,19 +416,18 @@
         <div class="question-box" aria-live="polite">
           <div>
             <p class="question-label">当前语音</p>
-            <p class="question" id="questionText">先点“开启语音”，再点“开始模拟”</p>
+            <p class="question" id="questionText">点击“开始模拟”播放考题音频</p>
           </div>
         </div>
 
         <div class="main-actions">
-          <button class="secondary" type="button" id="voiceBtn">开启语音</button>
+          <button class="secondary" type="button" id="voiceBtn">试播声音</button>
           <button class="primary" type="button" id="startBtn">开始模拟</button>
           <button class="secondary" type="button" id="repeatBtn">重听语音</button>
         </div>
 
         <div class="answers" id="answers" aria-label="选择灯光操作"></div>
-
-        <div class="feedback" id="feedback">手机浏览器通常要求先点一次按钮，语音才会播放。</div>
+        <div class="feedback" id="feedback">如果微信里声音异常，请用手机自带浏览器、Chrome 或 Edge 打开。</div>
       </div>
 
       <aside class="side">
@@ -477,31 +467,28 @@
 
   <script>
     const questions = [
-      { prompt: "夜间通过急弯、坡路", answer: "远近光交替", note: "听到通过，选择远近光交替。" },
-      { prompt: "夜间通过坡路、拱桥", answer: "远近光交替", note: "听到通过，选择远近光交替。" },
-      { prompt: "夜间通过急弯、拱桥", answer: "远近光交替", note: "听到通过，选择远近光交替。" },
-      { prompt: "夜间通过拱桥、人行横道", answer: "远近光交替", note: "听到通过，选择远近光交替。" },
-      { prompt: "夜间通过没有交通信号灯控制的路口", answer: "远近光交替", note: "听到通过，选择远近光交替。" },
-      { prompt: "夜间超越前方车辆", answer: "远近光交替", note: "听到超越，选择远近光交替。" },
-      { prompt: "夜间同方向近距离跟车行驶", answer: "近光灯", note: "听到跟车，选择近光灯。" },
-      { prompt: "夜间与机动车会车", answer: "近光灯", note: "听到会车，选择近光灯。" },
-      { prompt: "夜间在窄路与非机动车会车", answer: "近光灯", note: "听到会车，选择近光灯。" },
-      { prompt: "夜间在窄桥与非机动车会车", answer: "近光灯", note: "听到会车，选择近光灯。" },
-      { prompt: "夜间直行通过路口", answer: "近光灯", note: "听到直行通过，选择近光灯。" },
-      { prompt: "夜间在照明良好的道路上行驶", answer: "近光灯", note: "听到照明良好，选择近光灯。" },
-      { prompt: "打开近光灯", answer: "近光灯", note: "按指令打开近光灯。" },
-      { prompt: "打开远光灯", answer: "远光灯", note: "按指令打开远光灯。" },
-      { prompt: "夜间在没有路灯，照明不良条件下行驶", answer: "远光灯", note: "听到照明不良，选择远光灯。" },
-      { prompt: "路边临时停车", answer: "示廓灯和危险报警闪光灯", note: "临时停车通常选择示廓灯和危险报警闪光灯。" },
-      { prompt: "夜间发生交通事故又难以移动", answer: "示廓灯和危险报警闪光灯", note: "事故难以移动，选择示廓灯和危险报警闪光灯。" }
+      { prompt: "夜间通过急弯、坡路", answer: "远近光交替", note: "听到通过，选择远近光交替。", audio: "audio/q01.wav" },
+      { prompt: "夜间通过坡路、拱桥", answer: "远近光交替", note: "听到通过，选择远近光交替。", audio: "audio/q02.wav" },
+      { prompt: "夜间通过急弯、拱桥", answer: "远近光交替", note: "听到通过，选择远近光交替。", audio: "audio/q03.wav" },
+      { prompt: "夜间通过拱桥、人行横道", answer: "远近光交替", note: "听到通过，选择远近光交替。", audio: "audio/q04.wav" },
+      { prompt: "夜间通过没有交通信号灯控制的路口", answer: "远近光交替", note: "听到通过，选择远近光交替。", audio: "audio/q05.wav" },
+      { prompt: "夜间超越前方车辆", answer: "远近光交替", note: "听到超越，选择远近光交替。", audio: "audio/q06.wav" },
+      { prompt: "夜间同方向近距离跟车行驶", answer: "近光灯", note: "听到跟车，选择近光灯。", audio: "audio/q07.wav" },
+      { prompt: "夜间与机动车会车", answer: "近光灯", note: "听到会车，选择近光灯。", audio: "audio/q08.wav" },
+      { prompt: "夜间在窄路与非机动车会车", answer: "近光灯", note: "听到会车，选择近光灯。", audio: "audio/q09.wav" },
+      { prompt: "夜间在窄桥与非机动车会车", answer: "近光灯", note: "听到会车，选择近光灯。", audio: "audio/q10.wav" },
+      { prompt: "夜间直行通过路口", answer: "近光灯", note: "听到直行通过，选择近光灯。", audio: "audio/q11.wav" },
+      { prompt: "夜间在照明良好的道路上行驶", answer: "近光灯", note: "听到照明良好，选择近光灯。", audio: "audio/q12.wav" },
+      { prompt: "打开近光灯", answer: "近光灯", note: "按指令打开近光灯。", audio: "audio/q13.wav" },
+      { prompt: "打开远光灯", answer: "远光灯", note: "按指令打开远光灯。", audio: "audio/q14.wav" },
+      { prompt: "夜间在没有路灯，照明不良条件下行驶", answer: "远光灯", note: "听到照明不良，选择远光灯。", audio: "audio/q15.wav" },
+      { prompt: "路边临时停车", answer: "示廓灯和危险报警闪光灯", note: "临时停车通常选择示廓灯和危险报警闪光灯。", audio: "audio/q16.wav" },
+      { prompt: "夜间发生交通事故又难以移动", answer: "示廓灯和危险报警闪光灯", note: "事故难以移动，选择示廓灯和危险报警闪光灯。", audio: "audio/q17.wav" }
     ];
 
-    const options = [
-      "近光灯",
-      "远光灯",
-      "远近光交替",
-      "示廓灯和危险报警闪光灯"
-    ];
+    const options = ["近光灯", "远光灯", "远近光交替", "示廓灯和危险报警闪光灯"];
+    const player = new Audio();
+    player.preload = "auto";
 
     const state = {
       mode: "random",
@@ -510,8 +497,7 @@
       right: 0,
       wrong: 0,
       seen: 0,
-      mistakes: [],
-      voiceReady: false
+      mistakes: []
     };
 
     const els = {
@@ -531,46 +517,17 @@
       mistakes: document.getElementById("mistakes")
     };
 
-    function getChineseVoice() {
-      if (!("speechSynthesis" in window)) {
-        return null;
+    function playAudio(src) {
+      player.pause();
+      player.currentTime = 0;
+      player.src = src;
+      const playTask = player.play();
+      if (playTask && typeof playTask.catch === "function") {
+        playTask.catch(() => {
+          els.feedback.className = "feedback bad";
+          els.feedback.textContent = "声音被浏览器拦截了。请再点一次“重听语音”，或用手机自带浏览器打开。";
+        });
       }
-
-      const voices = window.speechSynthesis.getVoices();
-      return voices.find((voice) => voice.lang && voice.lang.toLowerCase().startsWith("zh")) || null;
-    }
-
-    function speak(text) {
-      if (!("speechSynthesis" in window)) {
-        els.feedback.className = "feedback bad";
-        els.feedback.textContent = "当前浏览器不支持网页语音。请换手机自带浏览器、Chrome 或 Edge 打开。";
-        return;
-      }
-
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      const voice = getChineseVoice();
-      if (voice) {
-        utterance.voice = voice;
-      }
-      utterance.lang = "zh-CN";
-      utterance.rate = 0.86;
-      utterance.pitch = 1;
-      window.speechSynthesis.speak(utterance);
-    }
-
-    function unlockVoice() {
-      if (!("speechSynthesis" in window)) {
-        els.feedback.className = "feedback bad";
-        els.feedback.textContent = "当前浏览器不支持网页语音。请换手机自带浏览器、Chrome 或 Edge 打开。";
-        return;
-      }
-
-      state.voiceReady = true;
-      els.voiceBtn.textContent = "语音已开启";
-      els.feedback.className = "feedback good";
-      els.feedback.textContent = "语音已开启。如果微信里仍然没声音，请点右上角用浏览器打开。";
-      speak("科三灯光模拟已开启。");
     }
 
     function pickNextIndex() {
@@ -579,10 +536,8 @@
       }
 
       let next = Math.floor(Math.random() * questions.length);
-      if (questions.length > 1) {
-        while (next === state.currentIndex) {
-          next = Math.floor(Math.random() * questions.length);
-        }
+      while (questions.length > 1 && next === state.currentIndex) {
+        next = Math.floor(Math.random() * questions.length);
       }
       return next;
     }
@@ -607,11 +562,11 @@
       const item = questions[state.currentIndex];
       els.questionText.textContent = item.prompt;
       els.feedback.className = "feedback";
-      els.feedback.textContent = state.voiceReady ? "请选择正确的灯光操作。" : "建议先点“开启语音”，手机才更容易播放声音。";
+      els.feedback.textContent = "请选择正确的灯光操作。";
       els.startBtn.textContent = "下一题";
       updateStats();
       renderAnswers();
-      speak(item.prompt);
+      playAudio(item.audio);
     }
 
     function checkAnswer(option, clickedButton) {
@@ -639,11 +594,7 @@
         clickedButton.classList.add("wrong");
         els.feedback.className = "feedback bad";
         els.feedback.textContent = "答错了。正确答案：" + item.answer + "。" + item.note;
-        state.mistakes.unshift({
-          prompt: item.prompt,
-          selected: option,
-          answer: item.answer
-        });
+        state.mistakes.unshift({ prompt: item.prompt, selected: option, answer: item.answer });
       }
 
       updateStats();
@@ -670,18 +621,17 @@
     }
 
     function resetPractice() {
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
+      player.pause();
+      player.currentTime = 0;
       state.currentIndex = -1;
       state.answered = false;
       state.right = 0;
       state.wrong = 0;
       state.seen = 0;
       state.mistakes = [];
-      els.questionText.textContent = "先点“开启语音”，再点“开始模拟”";
+      els.questionText.textContent = "点击“开始模拟”播放考题音频";
       els.feedback.className = "feedback";
-      els.feedback.textContent = "手机浏览器通常要求先点一次按钮，语音才会播放。";
+      els.feedback.textContent = "如果微信里声音异常，请用手机自带浏览器、Chrome 或 Edge 打开。";
       els.startBtn.textContent = "开始模拟";
       updateStats();
       renderAnswers();
@@ -697,19 +647,20 @@
       });
     });
 
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.onvoiceschanged = getChineseVoice;
-    }
-
-    els.voiceBtn.addEventListener("click", unlockVoice);
+    els.voiceBtn.addEventListener("click", () => {
+      els.feedback.className = "feedback";
+      els.feedback.textContent = "正在试播第一题声音。";
+      playAudio(questions[0].audio);
+    });
     els.startBtn.addEventListener("click", showQuestion);
     els.nextBtn.addEventListener("click", showQuestion);
     els.repeatBtn.addEventListener("click", () => {
       if (state.currentIndex < 0) {
-        speak("请先点击开始模拟。");
+        els.feedback.className = "feedback";
+        els.feedback.textContent = "请先点击开始模拟。";
         return;
       }
-      speak(questions[state.currentIndex].prompt);
+      playAudio(questions[state.currentIndex].audio);
     });
     els.resetBtn.addEventListener("click", resetPractice);
 
